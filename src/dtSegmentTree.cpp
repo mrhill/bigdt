@@ -262,11 +262,19 @@ void dtSegmentTree::NodeDelete(bbU32 const idx, bbU64 const segmentstart)
     }
 
     //
-    // Find node from delete node's subtrees to replace its position
+    // Delete node by replacing it with appropriate subtree
     //
     if ((walk = pSegment->mGE) == (bbU32)-1)
     {
-        // no GE subtree, directly use the LT subtree (or -1)
+        // Case A) no GE subtree -> move up LT subtree (or -1)
+        //      (parent)
+        //         . . <- pParentLink
+        //        /   \
+        //           (del)
+        //           /   x
+        //          o
+        //         / \
+        //
         if ((*pParentLink = pSegment->mLT) != (bbU32)-1)
         {
             bbASSERT((bbS64)mSegments[pSegment->mLT].mOffset < 0);
@@ -352,6 +360,7 @@ bbU32 dtSegmentTree::SplitNullSegment(bbU32 const idx, bbU64 segmentoffset)
         dtSegment* const pSegmentRight = mSegments.GetPtr(right);
 
         pSegmentRight->mType       = dtSEGMENTTYPE_NULL;
+        pSegmentRight->mChanged    = 0;
         pSegmentRight->mFileOffset = pSegmentLeft->mFileOffset + segmentoffset;
         pSegmentRight->mFileSize   = pSegmentLeft->mFileSize - segmentoffset;
         pSegmentLeft->mFileSize    = segmentoffset;

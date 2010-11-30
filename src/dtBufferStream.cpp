@@ -89,15 +89,11 @@ bbERR dtBufferStream::OnOpen(const bbCHAR* const pPath, int isnew)
         goto dtBuffer_file_Open_err;
 
     pSeg = mSegments.GetPtr(idx);
+    bbMemClear(pSeg, sizeof(*pSeg));
     pSeg->mType       = dtSEGMENTTYPE_NULL;
-    pSeg->mOffset     =
-    pSeg->mFileOffset = 0;
     pSeg->mFileSize   = mBufSize;
     pSeg->mLT         =
     pSeg->mGE         = (bbU32)-1;
-    pSeg->mPrev       =
-    pSeg->mNext       = 0;
-    mSegmentUsedFirst = mSegmentUsedLast = mSegmentUsedRoot = 0;
 
     mSegmentLastMapped = (bbU32)-1;
 
@@ -727,6 +723,7 @@ dtSection* dtBufferStream::Insert(bbU64 const offset, bbU32 const size)
     pSegment->mType     = dtSEGMENTTYPE_MAP;
     pSegment->mFileSize = 0;
     pSegment->mSize     = 0; // set later in Commit, but set to 0 so bbMemRealloc() in Discard() will free
+    pSegment->mChanged  = 1;
 
     pSection->mpData    = pSegment->mpData;
     pSection->mSegment  = insert;
@@ -1385,7 +1382,7 @@ void dtBufferStream::CheckTree()
         {
             bbASSERT(walk < mSegments.GetSize());
             gpOffsets[walk] = offset;
-            if (mSegments[walk].mChanged != 255)
+            if ((mSegments[walk].mType != dtSEGMENTTYPE_MAP) || (mSegments[walk].mChanged != 255))
                 offset += mSegments[walk].GetSize();
             walk = mSegments[walk].mNext;
         } while (walk != mSegmentUsedFirst);
