@@ -21,6 +21,7 @@ enum dtMETACHANGE
     dtMETACHANGE_STATE = 0,  //!< dtBuffer::mState was changed
     dtMETACHANGE_NAME,       //!< dtBuffer::mpName was changed
     dtMETACHANGE_MODIFIED,   //!< Buffer modified state was changed
+    dtMETACHANGE_ISNEW,      //!< Buffer::IsNew() state was changed
     dtMETACHANGE_CANUNDO,    //!< Can undo/redo state was changed
 };
 

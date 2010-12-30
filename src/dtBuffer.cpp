@@ -325,6 +325,7 @@ bbERR dtBuffer::Open(const bbCHAR* pPath)
 
     NotifyChange(dtCHANGE_ALL, 0, 0, NULL);
     NotifyMetaChange(dtMETACHANGE_MODIFIED);
+    NotifyMetaChange(dtMETACHANGE_ISNEW);
     NotifyMetaChange(dtMETACHANGE_CANUNDO);
 
     return bbEOK;
@@ -380,6 +381,7 @@ bbERR dtBuffer::Save(const bbCHAR* const pPath)
     mSyncPtNoMod = mSyncPt;
     mOpt = (bbU8)((bbUINT)mOpt &~ (dtBUFFEROPT_NEW|dtBUFFEROPT_MODIFIED));
     NotifyMetaChange(dtMETACHANGE_MODIFIED);
+    NotifyMetaChange(dtMETACHANGE_ISNEW);
 
     return bbEOK;
 
