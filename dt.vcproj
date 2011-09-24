@@ -43,7 +43,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\babel\include,include\dt"
+				AdditionalIncludeDirectories="..\..\babel\include,include\dt"
 				PreprocessorDefinitions="NDEBUG;WIN32;_LIB;UNICODE"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -118,7 +118,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\babel\include,include\dt"
+				AdditionalIncludeDirectories="..\..\babel\include,include\dt"
 				PreprocessorDefinitions="_DEBUG;WIN32;_LIB;UNICODE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
