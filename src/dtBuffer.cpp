@@ -21,7 +21,6 @@ dtBuffer::dtBuffer()
     mSyncPt = 0;
     mpName = NULL;
     mRefCt = 0;
-    mID = 0xFFFFFFFFUL;
 
     //
     // - Init section index
@@ -37,6 +36,7 @@ dtBuffer::dtBuffer()
 
 dtBuffer::~dtBuffer()
 {
+    Close();
     bbASSERT(mRefCt == 0);
     bbASSERT(mState == dtBUFFERSTATE_INIT);
 }

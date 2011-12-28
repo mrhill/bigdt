@@ -130,7 +130,6 @@ protected:
                                         */
 public:
     bbU32               mRefCt;         //!< Application defined reference count
-    bbU32               mID;            //!< Application defined buffer unique ID
 
 protected:
     bbU32               mHistPos;       //!< Next read position in change history

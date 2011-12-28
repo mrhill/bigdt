@@ -1517,3 +1517,24 @@ void dtBufferStream::DumpSegments()
 
 #endif
 
+dtBufferStream* dtBufferStream::Create(const bbCHAR* pPath)
+{
+    dtBufferStream* pBuf = new dtBufferStream;
+    if (!pBuf)
+        bbErrSet(bbENOMEM);
+
+    if (pBuf)
+    {
+        if (pPath != (const bbCHAR*)-1)
+        {
+            if (pBuf->Open(pPath) != bbEOK)
+            {
+                delete pBuf;
+                pBuf = NULL;
+            }
+        }
+    }
+
+    return pBuf;
+}
+

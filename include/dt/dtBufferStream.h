@@ -135,9 +135,17 @@ public:
 
     dtBufferStream();
 
+    /** Create and open a buffer.
+        @param pPath Pointer to 0-terminated path of file to open, 
+                     NULL to create a new buffer, or
+                     -1 to create an unopened buffer
+        @return Pointer to opened buffer object, or NULL on failure.
+    */
+    static dtBufferStream* Create(const bbCHAR* pPath);
+
     // interface implementation
     
-    ~dtBufferStream();
+    virtual ~dtBufferStream();
     virtual bbERR OnOpen(const bbCHAR* const pPath, int isnew);
     virtual void  OnClose();
     virtual bbERR OnSave(const bbCHAR* pPath, dtBUFFERSAVETYPE const savetype);
