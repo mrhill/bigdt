@@ -134,6 +134,7 @@ public:
     static bbCHAR*  spTempDir;    //!< Path to store temporary files
 
     dtBufferStream();
+    virtual ~dtBufferStream();
 
     /** Create and open a buffer.
         @param pPath Pointer to 0-terminated path of file to open, 
@@ -143,9 +144,6 @@ public:
     */
     static dtBufferStream* Create(const bbCHAR* pPath);
 
-    // interface implementation
-    
-    virtual ~dtBufferStream();
     virtual bbERR OnOpen(const bbCHAR* const pPath, int isnew);
     virtual void  OnClose();
     virtual bbERR OnSave(const bbCHAR* pPath, dtBUFFERSAVETYPE const savetype);

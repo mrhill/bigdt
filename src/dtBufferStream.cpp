@@ -49,6 +49,7 @@ dtBufferStream::dtBufferStream()
 
 dtBufferStream::~dtBufferStream()
 {
+    Close();
     ClearSegments();
 
 #ifdef bbDEBUG

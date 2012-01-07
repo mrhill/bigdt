@@ -36,7 +36,6 @@ dtBuffer::dtBuffer()
 
 dtBuffer::~dtBuffer()
 {
-    Close();
     bbASSERT(mRefCt == 0);
     bbASSERT(mState == dtBUFFERSTATE_INIT);
 }
