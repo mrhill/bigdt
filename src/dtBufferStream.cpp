@@ -676,7 +676,7 @@ dtSection* dtBufferStream::Insert(bbU64 const offset, bbU32 const size)
     if ((mSegments[idx].GetSize() == 0) && ((idx != mSegmentUsedFirst) || (idx == prev)))
     {
         bbASSERT((idx != prev) || (offset == 0)); // if left=right, we should be inserting at buffer start
-        bbASSERT((mSegments[idx].mType == dtSEGMENTTYPE_NULL) || (mSegments[idx].mpData == NULL)) // if Map, then pData should be NULL
+        bbASSERT((mSegments[idx].mType == dtSEGMENTTYPE_NULL) || (mSegments[idx].mpData == NULL)); // if Map, then pData should be NULL
 
         if ((pSection->mpData = (bbU8*)bbMemAlloc(size)) == NULL)
             goto dtBufferStream_Insert_err;
