@@ -1111,7 +1111,6 @@ bbERR dtBufferStream::Commit(dtSection* const pSection, void* const user)
 
         if ((pSection->mOpt & dtSECTIONOPT_MAP_TYPEMASK) != dtSECTIONOPT_MAP_SEQ)
         {
-            dtPage* const pPage  = pSection->mpPage;
             bbU8*         pTmp   = pSection->mpData;
             bbU32         size   = pSection->mSize;
             bbU64         offset = pSection->mOffset;
@@ -1365,8 +1364,6 @@ void dtBufferStream::CheckTree()
 {
     bbU64 offset = 0;
     dtSegment* pSegment;
-    dtSegment* pStack = mSegments.GetPtr();
-    bbU32 sp = 0;
     bbU32 walk, i;
 
     if (mSegments.GetSize() > gOffsetSize)
@@ -1474,7 +1471,6 @@ bbU32 dtBufferStream::DebugCheck()
                 crc += (bbU32)*(pData++);
         }
 
-        bbU32 const tmp = prev;
         prev = idx;
         idx = p->mNext;
         usedcount++;
@@ -1507,7 +1503,6 @@ void dtBufferStream::DumpSegments()
         fileoffset += pSeg->mFileSize;
         segments++;
 
-        bbU32 const tmp = prev;
         prev = walk;
         walk = pSeg->mNext;
 

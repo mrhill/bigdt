@@ -5,11 +5,11 @@
 
 bbUINT dtBuffer::mNewBufferCount = 0;
 
-void dtBufferNotify::OnBufferChange(dtBuffer* const pBuf, dtBufferChange* const pChange)
+void dtBufferNotify::OnBufferChange(dtBuffer* const, dtBufferChange* const)
 {
 }
 
-void dtBufferNotify::OnBufferMetaChange(dtBuffer* const pBuf, dtMETACHANGE const type)
+void dtBufferNotify::OnBufferMetaChange(dtBuffer* const, dtMETACHANGE const)
 {
 }
 
