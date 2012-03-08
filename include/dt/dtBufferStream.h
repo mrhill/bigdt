@@ -154,7 +154,7 @@ public:
     virtual bbERR Commit(dtSection* const pSection, void* const user);
     virtual void Discard(dtSection* const pSection);
 
-    friend e7WinDbg;
+    friend class e7WinDbg;
 };
 
 #endif /* dtBufferFile_H_ */
