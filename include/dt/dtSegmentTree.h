@@ -45,7 +45,7 @@ struct dtSegment
 #if bbSIZEOF_UPTR==4
 bbDECLAREARR(dtSegment, dtArrSegment, 48);
 #elif bbSIZEOF_UPTR==8
-bbDECLAREARR(dtSegment, dtArrSegment, 52);
+bbDECLAREARR(dtSegment, dtArrSegment, 56);
 #endif
 
 /** Tree of buffer segments. */

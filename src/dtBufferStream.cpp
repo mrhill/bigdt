@@ -34,7 +34,7 @@ bbCHAR* dtBufferStream::spTempDir = NULL;
 
 dtBufferStream::dtBufferStream()
 {
-    bbASSERT(sizeof(dtSegment) <= mSegments.GetElementSize());
+    bbASSERT(sizeof(dtSegment) == mSegments.GetElementSize());
 
     mSegmentLastMapped = (bbU32)-1;
     bbMemClear(mPagePool, sizeof(mPagePool));
@@ -90,7 +90,7 @@ bbERR dtBufferStream::OnOpen(const bbCHAR* const pPath, int isnew)
         goto dtBuffer_file_Open_err;
 
     pSeg = mSegments.GetPtr(idx);
-    bbMemClear(pSeg, sizeof(*pSeg));
+    bbMemClear(pSeg, sizeof(dtSegment));
     pSeg->mType       = dtSEGMENTTYPE_NULL;
     pSeg->mFileSize   = mBufSize;
     pSeg->mLT         =
