@@ -269,11 +269,11 @@ void dtSegmentTree::NodeDelete(bbU32 const idx, bbU64 const segmentstart)
         // Case A) no GE subtree -> move up LT subtree (or -1)
         //      (parent)
         //         . . <- pParentLink
-        //        /   \
+        //        /   \ 
         //           (del)
         //           /   x
         //          o
-        //         / \
+        //         / \ 
         //
         if ((*pParentLink = pSegment->mLT) != (bbU32)-1)
         {

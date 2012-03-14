@@ -2,7 +2,7 @@
 
 #define dtBUFREF_MINSCANSIZE 4096
 
-dtBufRef::dtBufRef() : bbTree(sizeof(dtBufRefPt), (bbUINT)&((dtBufRefPt*)0)->mLevel)
+dtBufRef::dtBufRef() : bbTree(sizeof(dtBufRefPt), (bbUINT)(bbUPTR)&((dtBufRefPt*)(bbUPTR)0)->mLevel)
 {
     SetMaxScanSize(1024*512);
     bbMemClear(&mHint, sizeof(dtBufRefPt));

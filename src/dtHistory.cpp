@@ -98,7 +98,7 @@ bbUINT dtHistory::Peek(bbU32 const pos, dtBufferChange* const pChange) const
 
     dtBuffer_HistPeek_out:
     if (pos == dtHistory::PEEKNEXT)
-        len = (bbUINT)pTmp - (bbUINT)mHist.GetPtr(mHistPos);
+        len = (bbUINT)(bbUPTR)pTmp - (bbUINT)(bbUPTR)mHist.GetPtr(mHistPos);
     bbASSERT(len == pTmp[-1]);
     return len;
 }
@@ -205,16 +205,16 @@ bbU8* dtHistory::Push(dtCHANGE const type, bbU64 const offset, bbU64 const lengt
     if ((pData = (bbU8*)bbMemAlloc((bbU32)length)) == NULL)
         goto dtBuffer_HistPush_exit;
 
-    bbST32(pTmp, (bbU32)pData); pTmp+=4;
+    bbST32(pTmp, (bbU32)(bbUPTR)pData); pTmp+=4;
     #if bbSIZEOF_UPTR > 4
-    bbST32(pTmp, (bbU32)((bbU64)pData>>32)); pTmp+=4;
+    bbST32(pTmp, (bbU32)(bbUPTR)((bbU64)pData>>32)); pTmp+=4;
     #endif
 
     dtBuffer_HistAdd_skip:
 
     pStart = mHist.GetPtr(pos);
     *pStart = (bbU8)header;
-    len = (bbUINT)pTmp - (bbUINT)pStart + 1;
+    len = (bbUINT)(bbUPTR)pTmp - (bbUINT)(bbUPTR)pStart + 1;
     *pTmp = (bbU8)len;
 
     mHistSize = mHistPos = pos + len;

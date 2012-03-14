@@ -1,6 +1,6 @@
 TEMPLATE = lib
 CONFIG += staticlib
-TARGET = libqdt
+TARGET = qdt
 DEPENDPATH += .
 INCLUDEPATH += ./include/dt ../../babel/include
 DEFINES += bbQT
