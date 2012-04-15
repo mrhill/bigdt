@@ -2,6 +2,7 @@
 #include <babel/str.h>
 #include <babel/file.h>
 #include <babel/log.h>
+#include <babel/StrBuf.h>
 
 enum
 {
@@ -1265,6 +1266,7 @@ void dtBufferStream::DumpSavedTree()
             bbFileWrite(fh, gpSavedSegments, sizeof(dtSegment) * gSavedSegmentSize);
             bbFileClose(fh);
         }
+        bbMemFree(pPath);
     }
 }
 
@@ -1482,24 +1484,27 @@ bbU32 dtBufferStream::DebugCheck()
     return crc;
 }
 
-void dtBufferStream::DumpSegments()
+void dtBufferStream::DumpSegments(bbFILEH hFile)
 {
     bbU32 prev = mSegmentUsedLast;
     bbU32 walk = mSegmentUsedFirst;
     bbU64 fileoffset = 0;
+    bbU64 calculatedSize = 0;
     bbU32 segments = 0;
+    bbStrBuf str;
 
     do
     {
         dtSegment* pSeg = mSegments.GetPtr(walk);
 
-        bbPrintf(bbT("Type %d: fileoffs 0x%I64X, filesize 0x%I64X, size 0x%X, changed %d\n"),
+        str.Catf(bbT("Type %d: fileoffs 0x%"bbI64"X, filesize 0x%"bbI64"X, size 0x%X, changed %d\n"),
             pSeg->mType,
             fileoffset,
             pSeg->mFileSize,
             pSeg->GetSize(),
             pSeg->mChanged);
 
+        calculatedSize += pSeg->GetSize();
         fileoffset += pSeg->mFileSize;
         segments++;
 
@@ -1508,7 +1513,11 @@ void dtBufferStream::DumpSegments()
 
     } while (walk != mSegmentUsedFirst);
 
-    bbPrintf(bbT("Buffer size 0x%I64X, org filesize 0x%I64X, %d segments\n"), mBufSize, fileoffset, segments);
+    str.Catf(bbT("Buffer size 0x%"bbI64"X, calc'ed size 0x%"bbI64"X org filesize 0x%"bbI64"X, %d segments\n"), mBufSize, calculatedSize, fileoffset, segments);
+    if (!hFile)
+        bbPrintf(str.GetPtr());
+    else
+        bbFileWrite(hFile, str.GetPtr(), str.GetLen()*sizeof(bbCHAR));
 }
 
 #endif

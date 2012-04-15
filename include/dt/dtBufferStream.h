@@ -103,7 +103,7 @@ public:
     void SaveTree(dtOP op, bbU64 offset, bbU64 size);
     void CheckTree();
     bbU32 DebugCheck();                 //!< Test integrity, returns buffer CRC
-    void DumpSegments();
+    void DumpSegments(bbFILEH hFile = NULL);
 #endif
 
 private:
