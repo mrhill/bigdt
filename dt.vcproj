@@ -219,7 +219,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="src\dtBufRef.cpp"
+				RelativePath="src\dtRef.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -302,7 +302,7 @@
 				>
 			</File>
 			<File
-				RelativePath="include\dt\dtBufRef.h"
+				RelativePath="include\dt\dtRef.h"
 				>
 			</File>
 			<File

@@ -1,24 +1,24 @@
-#include "dtBufRef.h"
+#include "dtRef.h"
 
 #define dtBUFREF_MINSCANSIZE 4096
 
-dtBufRef::dtBufRef() : bbTree(sizeof(dtBufRefPt), (bbUINT)(bbUPTR)&((dtBufRefPt*)(bbUPTR)0)->mLevel)
+dtRefStore::dtRefStore() : bbTree(sizeof(dtRefPt), (bbUINT)(bbUPTR)&((dtRefPt*)(bbUPTR)0)->mLevel)
 {
     SetMaxScanSize(1024*512);
-    bbMemClear(&mHint, sizeof(dtBufRefPt));
+    bbMemClear(&mHint, sizeof(dtRefPt));
 }
 
-void dtBufRef::Clear()
+void dtRefStore::Clear()
 {
     bbTree::Clear();
-    bbMemClear(&mHint, sizeof(dtBufRefPt));
+    bbMemClear(&mHint, sizeof(dtRefPt));
 }
 
-bbERR dtBufRef::SaveRef(const dtBufRefPt* const pRef)
+bbERR dtRefStore::SaveRef(const dtRefPt* const pRef)
 {
     bbU32 idx;
 
-    if (pRef->mOpt & dtBUFREFOPT_ESTIMATED)
+    if (pRef->mOpt & dtREFOPT_ESTIMATED)
     {
         mHint = *pRef;
         return bbEOK;
@@ -27,8 +27,8 @@ bbERR dtBufRef::SaveRef(const dtBufRefPt* const pRef)
     if (pRef->mColumn)
         return bbErrSet(bbEBADPARAM);
 
-    bbASSERT(!(pRef->mOpt & (dtBUFREFOPT_ESTIMATED|dtBUFREFOPT_ESTLOGLINE)));
-    bbASSERT(!(pRef->mOpt & dtBUFREFOPT_EOB));
+    bbASSERT(!(pRef->mOpt & (dtREFOPT_ESTIMATED|dtREFOPT_ESTLOGLINE)));
+    bbASSERT(!(pRef->mOpt & dtREFOPT_EOB));
     bbASSERT(pRef->mColumn == 0);
 
     if (mNodeFree >= mTreeSize) // tree capacity full?
@@ -45,7 +45,7 @@ bbERR dtBufRef::SaveRef(const dtBufRefPt* const pRef)
     if ((idx = NewNode()) == (bbU32)-1)
         return bbELAST;
 
-    dtBufRefNode* pNode = GetNode(idx);
+    dtRefNode* pNode = GetNode(idx);
     pNode->mLT =
     pNode->mGE = (bbU32)-1;
     pNode->ref = *pRef;
@@ -54,11 +54,11 @@ bbERR dtBufRef::SaveRef(const dtBufRefPt* const pRef)
     bbU32 parent = mNodeRoot;
     while (parent != (bbU32)-1)
     {
-        dtBufRefNode* pNode = GetNode(parent);
+        dtRefNode* pNode = GetNode(parent);
 
         if (pRef->mOffset < pNode->ref.mOffset)
             pParent = &pNode->mLT;
-        else 
+        else
             pParent = &pNode->mGE;
 
         parent = *pParent;
@@ -69,15 +69,15 @@ bbERR dtBufRef::SaveRef(const dtBufRefPt* const pRef)
     return bbEOK;
 }
 
-void dtBufRef::FindNodeFromOffset(bbU64 const offset, dtBufRefPt* const pRef)
+void dtRefStore::FindNodeFromOffset(bbU64 const offset, dtRefPt* const pRef)
 {
-    dtBufRefNode* pFound = NULL;
+    dtRefNode* pFound = NULL;
 
     bbU32 idx = mNodeRoot;
 
     if (idx != (bbU32)-1)
     {
-        dtBufRefNode* pNode;
+        dtRefNode* pNode;
         do
         {
             pNode = GetNode(idx);
@@ -101,14 +101,14 @@ void dtBufRef::FindNodeFromOffset(bbU64 const offset, dtBufRefPt* const pRef)
     }
     else
     {
-        bbMemClear(pRef, sizeof(dtBufRefPt));
-        pRef->mLogLine = mpIf->BufRefGetLogLineStart();
+        bbMemClear(pRef, sizeof(dtRefPt));
+        pRef->mLogLine = mpIf->RefGetLogLineStart();
     }
 }
 
-void dtBufRef::FindNodeFromLine(bbU64 const line, dtBufRefPt* const pRef)
+void dtRefStore::FindNodeFromLine(bbU64 const line, dtRefPt* const pRef)
 {
-    dtBufRefNode* pFound = NULL;
+    dtRefNode* pFound = NULL;
 
     bbU32 idx = mNodeRoot;
 
@@ -116,7 +116,7 @@ void dtBufRef::FindNodeFromLine(bbU64 const line, dtBufRefPt* const pRef)
     {
         /* Tree is sorted by offs, but sorting order for line is the same. */
 
-        dtBufRefNode* pNode;
+        dtRefNode* pNode;
         do
         {
             pNode = GetNode(idx);
@@ -140,12 +140,12 @@ void dtBufRef::FindNodeFromLine(bbU64 const line, dtBufRefPt* const pRef)
     }
     else
     {
-        bbMemClear(pRef, sizeof(dtBufRefPt));
-        pRef->mLogLine = mpIf->BufRefGetLogLineStart();
+        bbMemClear(pRef, sizeof(dtRefPt));
+        pRef->mLogLine = mpIf->RefGetLogLineStart();
     }
 }
 
-bbU32 dtBufRef::GetBytesPerLine(dtBufRefPt* const pRef)
+bbU32 dtRefStore::GetBytesPerLine(dtRefPt* const pRef)
 {
     bbU32 BytesPerLine = 100;
 
@@ -159,11 +159,11 @@ bbU32 dtBufRef::GetBytesPerLine(dtBufRefPt* const pRef)
     return BytesPerLine;
 }
 
-bbERR dtBufRef::Offset2Ref(bbU64 offset, dtBufRefPt* const pRef)
+bbERR dtRefStore::Offset2Ref(bbU64 offset, dtRefPt* const pRef)
 {
     bbERR err;
-    
-    bbU64 const bufsize = mpIf->BufRefGetSize();
+
+    bbU64 const bufsize = mpIf->RefGetBufSize();
     if (offset > bufsize)
         offset = bufsize;
 
@@ -176,15 +176,15 @@ bbERR dtBufRef::Offset2Ref(bbU64 offset, dtBufRefPt* const pRef)
 
     if (diff > mMaxScanSize)
     {
-        if (pRef->mLine == 0) 
+        if (pRef->mLine == 0)
         {
             //
             // the reference tree seems empty, scan start of buffer to
             // estimate BytesPerLine
             //
             bbASSERT((pRef->mOffset == 0) && (pRef->mColumn== 0));
-        
-            if (bbEOK != mpIf->BufRefSkip(pRef, mMaxScanSize>>2, dtBUFREFSKIP_OFFSET))
+
+            if (bbEOK != mpIf->RefSkip(pRef, mMaxScanSize>>2, dtREFSKIP_OFFSET))
             {
                 bbASSERT(0); // this should succeed unless I/O or memory error
             }
@@ -197,16 +197,16 @@ bbERR dtBufRef::Offset2Ref(bbU64 offset, dtBufRefPt* const pRef)
         bbU32 const BytesPerLine = GetBytesPerLine(pRef);
         bbASSERT(offset > pRef->mOffset);
 
-        dtBufRefPt const knownRef = *pRef;
-        
+        dtRefPt const knownRef = *pRef;
+
         pRef->mLine    += (offset - pRef->mOffset) / BytesPerLine;
         pRef->mOffset   = offset;
         pRef->mBitOffs  = 0;
-        pRef->mOpt      = dtBUFREFOPT_ESTIMATED;
+        pRef->mOpt      = dtREFOPT_ESTIMATED;
         pRef->mEncState = 0;
         pRef->mColumn   = 0;
 
-        err = mpIf->BufRefSyncLine(pRef, &knownRef, mMaxScanSize);
+        err = mpIf->RefSyncLine(pRef, &knownRef, mMaxScanSize);
 
         if (err == bbEOK)
             SaveRef(pRef);
@@ -214,7 +214,7 @@ bbERR dtBufRef::Offset2Ref(bbU64 offset, dtBufRefPt* const pRef)
         return err;
     }
 
-    err = mpIf->BufRefSkip(pRef, offset, dtBUFREFSKIP_OFFSET);
+    err = mpIf->RefSkip(pRef, offset, dtREFSKIP_OFFSET);
 
     if (err == bbEOK)
     {
@@ -225,7 +225,7 @@ bbERR dtBufRef::Offset2Ref(bbU64 offset, dtBufRefPt* const pRef)
     return err;
 }
 
-bbERR dtBufRef::Line2Ref(bbU64 const line, dtBufRefPt* const pRef)
+bbERR dtRefStore::Line2Ref(bbU64 const line, dtRefPt* const pRef)
 {
     bbERR err;
 
@@ -241,16 +241,16 @@ bbERR dtBufRef::Line2Ref(bbU64 const line, dtBufRefPt* const pRef)
     diff *= BytesPerLine;
     if (diff > mMaxScanSize)
     {
-        dtBufRefPt const knownRef = *pRef;
+        dtRefPt const knownRef = *pRef;
 
         bbASSERT(line > pRef->mLine);
         pRef->mOffset  += diff;
         pRef->mLine     = line;
         pRef->mBitOffs  = 0;
-        pRef->mOpt      = dtBUFREFOPT_ESTIMATED; //xxx
+        pRef->mOpt      = dtREFOPT_ESTIMATED; //xxx
         pRef->mEncState = 0;
 
-        bbU64 const bufsize = mpIf->BufRefGetSize();
+        bbU64 const bufsize = mpIf->RefGetBufSize();
 
         if (pRef->mOffset > bufsize)
         {
@@ -259,7 +259,7 @@ bbERR dtBufRef::Line2Ref(bbU64 const line, dtBufRefPt* const pRef)
         }
         else
         {
-            err = mpIf->BufRefSyncLine(pRef, &knownRef, mMaxScanSize);
+            err = mpIf->RefSyncLine(pRef, &knownRef, mMaxScanSize);
 
             if (err == bbEOK)
                 SaveRef(pRef);
@@ -268,7 +268,7 @@ bbERR dtBufRef::Line2Ref(bbU64 const line, dtBufRefPt* const pRef)
         return err;
     }
 
-    err = mpIf->BufRefSkip(pRef, line, dtBUFREFSKIP_LINE);
+    err = mpIf->RefSkip(pRef, line, dtREFSKIP_LINE);
 
     if (err == bbEOK)
     {

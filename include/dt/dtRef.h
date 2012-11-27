@@ -1,5 +1,5 @@
-#ifndef dtBufRef_H_
-#define dtBufRef_H_
+#ifndef dtRef_H_
+#define dtRef_H_
 
 #include "dtdefs.h"
 #include "babel/Tree.h"
@@ -9,54 +9,54 @@
     Defined method to reset a text reference point to dtBuffer
     start is to set all members to 0, and initialize the mLogLine member.
 
-    dtBufRefPt::mEncstate is intended for storing the data or character
+    dtRefPt::mEncstate is intended for storing the data or character
     encoding state at a given text reference point, e.g. e7WinText will
     copy this to bbENCSTATE::state.
 */
-struct dtBufRefPt
+struct dtRefPt
 {
     bbU64 mOffset;      //!< Buffer offset
     bbU64 mLine;        //!< Physical line number, starting at 0
     bbU8  mBitOffs;     //!< Buffer bit offset
     bbU8  mOpt;         //!< Option bits
     bbU8  mSubLine;     //!< Sub line number or flag in current logical line, 0 indicates start of logical line
-    bbU8  mLevel;       //!< AA-Tree level, dtBufRef internal use
+    bbU8  mLevel;       //!< AA-Tree level, dtRefStore internal use
     bbU32 mColumn;      //!< Physical column number on current line, starting at 0
     bbU32 mEncState;    //!< Character encoding state, or other mode specific data
     bbS64 mLogLine;     //!< Logical line number
 };
 
-/** dtBufRefPt::opt flags. */
-enum dtBUFREFOPT
+/** dtRefPt::opt flags. */
+enum dtREFOPT
 {
-    dtBUFREFOPT_ESTIMATED    = 0x10, //!< Buffer reference is estimated
-    dtBUFREFOPT_ESTLOGLINE   = 0x20, //!< Logical line number is estimated
-    dtBUFREFOPT_EOB          = 0x80, //!< End of buffer flag
+    dtREFOPT_ESTIMATED    = 0x10, //!< Buffer reference is estimated
+    dtREFOPT_ESTLOGLINE   = 0x20, //!< Logical line number is estimated
+    dtREFOPT_EOB          = 0x80, //!< End of buffer flag
 
     // text specific flags
-    dtBUFREFOPT_AREA0        = 0x0,  //!< Marks editing area 0 (meaning is e7Win implementation specific)
-    dtBUFREFOPT_AREA1        = 0x1,  //!< Marks editing area 1
-    dtBUFREFOPT_AREA2        = 0x2,  //!< Marks editing area 2
-    dtBUFREFOPT_AREA3        = 0x3,  //!< Marks editing area 3
-    dtBUFREFOPT_AREACOUNT    = 4,    //!< Maximum number of editing areas
-    dtBUFREFOPT_AREAMASK     = 0x3,  //!< Bitmask to mask editing area
+    dtREFOPT_AREA0        = 0x0,  //!< Marks editing area 0 (meaning is e7Win implementation specific)
+    dtREFOPT_AREA1        = 0x1,  //!< Marks editing area 1
+    dtREFOPT_AREA2        = 0x2,  //!< Marks editing area 2
+    dtREFOPT_AREA3        = 0x3,  //!< Marks editing area 3
+    dtREFOPT_AREACOUNT    = 4,    //!< Maximum number of editing areas
+    dtREFOPT_AREAMASK     = 0x3,  //!< Bitmask to mask editing area
 };
 
-struct dtBufRefNode : bbTreeNode
+struct dtRefNode : bbTreeNode
 {
-    dtBufRefPt ref; //!< Reference point
+    dtRefPt ref; //!< Reference point
 };
 
-enum dtBUFREFSKIP
+enum dtREFSKIP
 {
-    dtBUFREFSKIP_OFFSET = 0,
-    dtBUFREFSKIP_LINE,
-    dtBUFREFSKIP_LOGLINE,
-    dtBUFREFSKIP_COLUMN
+    dtREFSKIP_OFFSET = 0,
+    dtREFSKIP_LINE,
+    dtREFSKIP_LOGLINE,
+    dtREFSKIP_COLUMN
 };
 
-/** Client callback interface for dtBufRef. */
-struct dtBufRefIf
+/** Client callback interface for dtRefStore. */
+struct dtRefIf
 {
     /** Skip through buffer line by line until terminating condition matched.
         @param pScan [in]  Buffer scan state corresponding to \a pRef <br>
@@ -71,7 +71,7 @@ struct dtBufRefIf
                      <tr><td>#e7SKIPLINESMODE_LOGLINE</td><td>Stop when current logical line matches pScan->logline</td></tr>
                      </table>
     */
-    virtual bbERR BufRefSkip(dtBufRefPt* const pRef, bbU64 const dst, dtBUFREFSKIP const mode) = 0;
+    virtual bbERR RefSkip(dtRefPt* const pRef, bbU64 const dst, dtREFSKIP const mode) = 0;
 
     /** Skip backwards through buffer to find start of physical line for estimated buffer reference.
 
@@ -83,30 +83,30 @@ struct dtBufRefIf
         cannot be found, bbENOTFOUND error should be returned.
 
         @param pRef [in]  Estimated Reference point to start scanning from.
-                          dtBufRefPt::mOffset contains the buffer offset to start scanning from.
-                          dtBufRefPt::mLine contains the estimated physical line number, whose start offset should be found.
-                          dtBufRefPt::mBitoffs will be 0.
-                          dtBufRefPt::mOpt will be initialized to dtBUFREFOPT_ESTIMATED.
+                          dtRefPt::mOffset contains the buffer offset to start scanning from.
+                          dtRefPt::mLine contains the estimated physical line number, whose start offset should be found.
+                          dtRefPt::mBitoffs will be 0.
+                          dtRefPt::mOpt will be initialized to dtREFOPT_ESTIMATED.
 
-                    [out] dtBufRefPt::mOffset and dtBufRefPt::mBitoffs should be updated to point to physical linestart.
-                          dtBufRefPt::mOpt should be updated with required flags.
-                          dtBufRefPt::mLogline should be updated or estimated, if estimated dtBUFREFOPT_ESTLOGLINE should be set.
+                    [out] dtRefPt::mOffset and dtRefPt::mBitoffs should be updated to point to physical linestart.
+                          dtRefPt::mOpt should be updated with required flags.
+                          dtRefPt::mLogline should be updated or estimated, if estimated dtREFOPT_ESTLOGLINE should be set.
 
         @param pKnownRef Last known reference point before the estimated reference point \a pRef.
 
         @param MaxScanSize Maximum number of bytes to scan backwards
     */
-    virtual bbERR BufRefSyncLine(dtBufRefPt* const pRef, const dtBufRefPt* const pKnownRef, bbU32 const MaxScanSize) = 0;
+    virtual bbERR RefSyncLine(dtRefPt* const pRef, const dtRefPt* const pKnownRef, bbU32 const MaxScanSize) = 0;
 
     /** Get buffer size from client.
         @return Current buffer size
     */
-    virtual bbU64 BufRefGetSize() = 0;
+    virtual bbU64 RefGetBufSize() = 0;
 
     /** Get logical line number start from client.
         @return Start line
     */
-    virtual bbS64 BufRefGetLogLineStart() = 0;
+    virtual bbS64 RefGetLogLineStart() = 0;
 };
 
 /** Cache of buffer references for fast random access into variable line length buffes.
@@ -118,18 +118,18 @@ struct dtBufRefIf
     - mLine is the last rendered physical line. If the last character fills the last logical column
       it will be an empty line. If the buffer ends with line return sequence, it will be an empty line.
     - mLogLine and mSubLine behave as for mLine
-    - dtBUFREFOPT_EOB is set
-    - If dtBUFREFOPT_ESTIMATED is set, mLine is estimated
+    - dtREFOPT_EOB is set
+    - If dtREFOPT_ESTIMATED is set, mLine is estimated
 */
-class dtBufRef : private bbTree
+class dtRefStore : private bbTree
 {
-    dtBufRefIf* mpIf;           //!< Associated interface
+    dtRefIf*    mpIf;              //!< Associated interface
     bbU32       mMaxScanSize;   //!< Maximum bytes to scan, before reference points are estimated. Must be power of 2.
-    dtBufRefPt  mHint;
+    dtRefPt  mHint;
 
-    inline dtBufRefNode* GetNode(bbU32 const idx) const
+    inline dtRefNode* GetNode(bbU32 const idx) const
     {
-        return (dtBufRefNode*)((bbU8*)mpNodes + idx * sizeof(dtBufRefNode));
+        return (dtRefNode*)((bbU8*)mpNodes + idx * sizeof(dtRefNode));
     }
 
     inline bbU32 GetOptimumTreeSize() const
@@ -137,20 +137,20 @@ class dtBufRef : private bbTree
         return 32;//xxx
     }
 
-    bbU32 GetBytesPerLine(dtBufRefPt* const pRef);
+    bbU32 GetBytesPerLine(dtRefPt* const pRef);
 
 public:
-    dtBufRef();
+    dtRefStore();
 
-    void FindNodeFromOffset(bbU64 const offset, dtBufRefPt* const pRef);
-    void FindNodeFromLine(bbU64 const line, dtBufRefPt* const pRef);
+    void FindNodeFromOffset(bbU64 const offset, dtRefPt* const pRef);
+    void FindNodeFromLine(bbU64 const line, dtRefPt* const pRef);
 
-    inline void SetIf(dtBufRefIf* const pIf)
+    inline void SetIf(dtRefIf* const pIf)
     {
         mpIf = pIf;
     }
 
-    /** Set allowed size of data to scan, before reverting to estimate reference points. 
+    /** Set allowed size of data to scan, before reverting to estimate reference points.
         @param MaxScanSize Size of data to scan in bytes
     */
     inline void SetMaxScanSize(bbU32 const MaxScanSize)
@@ -162,7 +162,7 @@ public:
     /** Clear all cached reference points. */
     void Clear();
 
-    /** Test if cache is empty. 
+    /** Test if cache is empty.
         @return true if empty
     */
     inline int IsEmpty() const
@@ -174,22 +174,22 @@ public:
         This call will save a new reference point and possibly delete
         old references to balance the tree size.
 
-        If pRef->mOpt flag dtBUFREFOPT_ESTLOGLINE or dtBUFREFOPT_ESTIMATED is set,
+        If pRef->mOpt flag dtREFOPT_ESTLOGLINE or dtREFOPT_ESTIMATED is set,
         or pRef->mColumn is not 0, the call does nothing and returns bbEBADPARAM.
 
         @param pRef Reference point to save, will be copied
     */
-    bbERR SaveRef(const dtBufRefPt* const pRef);
+    bbERR SaveRef(const dtRefPt* const pRef);
 
     /** Get reference point from buffer offset.
 
         If the given offset is on or beyound the buffer end, the reference
         point for the start of the line with the buffer end and bbEOK is returned.
-    
+
         @param offset Buffer offset
         @param pRef   Returns reference point
     */
-    bbERR Offset2Ref(bbU64 offset, dtBufRefPt* const pRef);
+    bbERR Offset2Ref(bbU64 offset, dtRefPt* const pRef);
 
     /** Get reference point from physical line.
 
@@ -200,8 +200,8 @@ public:
         @param line   Line number, starting at 0
         @param pRef   Returns reference point
     */
-    bbERR Line2Ref(bbU64 const line, dtBufRefPt* const pRef);
+    bbERR Line2Ref(bbU64 const line, dtRefPt* const pRef);
 };
 
-#endif /* dtBufRef_H_ */
+#endif
 
