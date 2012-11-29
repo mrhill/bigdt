@@ -123,9 +123,9 @@ struct dtRefIf
 */
 class dtRefStore : private bbTree
 {
-    dtRefIf*    mpIf;              //!< Associated interface
+    dtRefIf*    mpIf;           //!< Associated interface
     bbU32       mMaxScanSize;   //!< Maximum bytes to scan, before reference points are estimated. Must be power of 2.
-    dtRefPt  mHint;
+    dtRefPt     mHint;
 
     inline dtRefNode* GetNode(bbU32 const idx) const
     {
