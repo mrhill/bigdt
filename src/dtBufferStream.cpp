@@ -66,6 +66,7 @@ bbERR dtBufferStream::OnOpen(const bbCHAR* const pPath, int isnew)
 {
     bbU32 idx;
     dtSegment* pSeg;
+    bbFILESTAT stat;
     
     bbASSERT(mSegments.GetSize() == 0);
 
@@ -76,6 +77,15 @@ bbERR dtBufferStream::OnOpen(const bbCHAR* const pPath, int isnew)
     }
     else
     {
+        if (bbFileStat(pPath, &stat) == bbEOK)
+        {
+            if (stat.mode & bbFILESTAT_DIR)
+            {
+                bbErrSet(bbENOTAFILE);
+                goto dtBuffer_file_Open_err;
+            }
+        }
+   
         if ((mhFile = bbFileOpen(pPath, bbFILEOPEN_READ)) == NULL)
             goto dtBuffer_file_Open_err;
 
