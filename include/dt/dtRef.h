@@ -59,16 +59,14 @@ enum dtREFSKIP
 struct dtRefIf
 {
     /** Skip through buffer line by line until terminating condition matched.
-        @param pScan [in]  Buffer scan state corresponding to \a pRef <br>
-                     [out] Updated scan state
         @param pRef  [in]  Cache reference point to start scan at <br>
                      [out] Updated cache reference point
         @param dst   Physical line / offset / logical line to skip to
         @param mode  Terminating condition
                      <table>
-                     <tr><td>#e7SKIPLINESMODE_OFFS</td><td>Stop when current offset matches pScan->offs</td></tr>
-                     <tr><td>#e7SKIPLINESMODE_LINE</td><td>Stop when current physical line matches pScan->line</td></tr>
-                     <tr><td>#e7SKIPLINESMODE_LOGLINE</td><td>Stop when current logical line matches pScan->logline</td></tr>
+                     <tr><td>#e7SKIPLINESMODE_OFFS</td><td>Stop when current offset matches \a dst</td></tr>
+                     <tr><td>#e7SKIPLINESMODE_LINE</td><td>Stop when current physical line matches \a dst</td></tr>
+                     <tr><td>#e7SKIPLINESMODE_LOGLINE</td><td>Stop when current logical line matches \a dst</td></tr>
                      </table>
     */
     virtual bbERR RefSkip(dtRefPt* const pRef, bbU64 const dst, dtREFSKIP const mode) = 0;
