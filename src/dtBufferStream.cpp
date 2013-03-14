@@ -67,7 +67,7 @@ bbERR dtBufferStream::OnOpen(const bbCHAR* const pPath, int isnew)
     bbU32 idx;
     dtSegment* pSeg;
     bbFILESTAT stat;
-    
+
     bbASSERT(mSegments.GetSize() == 0);
 
     if (isnew)
@@ -85,7 +85,7 @@ bbERR dtBufferStream::OnOpen(const bbCHAR* const pPath, int isnew)
                 goto dtBuffer_file_Open_err;
             }
         }
-   
+
         if ((mhFile = bbFileOpen(pPath, bbFILEOPEN_READ)) == NULL)
             goto dtBuffer_file_Open_err;
 
@@ -348,8 +348,8 @@ bbERR dtBufferStream::Delete(bbU64 const offset, bbU64 size, void* const user)
                 //           just reduce its size and return
                 //
                 //       |-Del-|                    |-Del-|
-                //       |     |          ->        |/    
-                // |-Map----------|-X--...    |-Map-|--|-X--...   
+                //       |     |          ->        |/
+                // |-Map----------|-X--...    |-Map-|--|-X--...
                 //
 
                 bbU32 const delend = (bbU32)segmentoffset + (bbU32)size;
@@ -603,13 +603,13 @@ bbERR dtBufferStream::Delete(bbU64 const offset, bbU64 size, void* const user)
 
         pSegment->mPrev = prev;
         mSegments[prev].mNext = idx;
-        
+
         if (mSegmentUsedLast == prev) // deleting from buffer start
             mSegmentUsedFirst = idx;
-        
+
         if (size)
             NodeSubstractOffset(idx, offset, size); // adjust relative offsets in index tree
-        
+
         // return del segment to free pool
         mSegments[del].mNext = mSegmentFree;
         mSegmentFree = del;
@@ -857,7 +857,7 @@ dtSection* dtBufferStream::Map(bbU64 offset, bbU32 size, dtMAP const accesshint)
 
         if (size == 0)
             break;
-        
+
         if ((pMap = MapSeq(offset, 0, dtMAP_READONLY)) == NULL)
         {
             bbASSERT(bbErrGet() != bbEEOF);
@@ -965,23 +965,22 @@ dtSection* dtBufferStream::MapSeq(bbU64 const offset, bbUINT minsize, dtMAP cons
     //
     // Check if segment size satisfies minsize requirement
     //
-    if (pSegment->mSize < minsize)
+    bbU32 segmentOffset = (bbU32)offset - (bbU32)segmentstart;
+    bbASSERT(pSegment->mSize > segmentOffset);
+
+    if ((pSegment->mSize-segmentOffset) < minsize)
     {
         SectionFree(pSection); // could catch this condition earlier to avoid pSection alloc
         return Map(offset, minsize, accesshint);
     }
 
     pSection->mSegment = idx;
-
-    idx = (bbU32)offset - (bbU32)segmentstart;
-    bbASSERT(pSegment->mSize > idx);
-
-    pSection->mpData  = pSegment->mpData + idx;
-    pSection->mOffset = offset;
-    pSection->mSize   = pSegment->mSize - idx;
-    pSection->mType   = dtSECTIONTYPE_MAPSEQ;
+    pSection->mpData   = pSegment->mpData + segmentOffset;
+    pSection->mOffset  = offset;
+    pSection->mSize    = pSegment->mSize - segmentOffset;
+    pSection->mType    = dtSECTIONTYPE_MAPSEQ;
     #ifdef bbDEBUG
-    pSection->mOpt    = (bbU8)accesshint;
+    pSection->mOpt     = (bbU8)accesshint;
     #endif
 
     //
@@ -1227,7 +1226,7 @@ void dtBufferStream::Discard(dtSection* const pSection)
             if (pSection->mOpt == dtSECTIONOPT_INSERT_CREATE)
             {
                 bbASSERT(pSegment->mpData == NULL); // ensure it was really freed
-            
+
                 // return segment to free pool
                 pSegment->mNext = mSegmentFree;
                 mSegmentFree = pSection->mSegment;
@@ -1327,9 +1326,9 @@ void dtBufferStream::LoadSavedTree(const bbCHAR* const pFileName, int const exec
                 pSegment->mpData = (bbU8*)bbMemAlloc(pSegment->mSize);
                 bbMemClear(pSegment->mpData, pSegment->mSize);
             }
-            
+
             walk = pSegment->mNext;
-            
+
         } while (walk != mSegmentUsedFirst);
 
         if (execute)
@@ -1425,7 +1424,7 @@ void dtBufferStream::CheckTree()
             }
 
         } while (walk != (bbU32)-1);
-    }   
+    }
 }
 
 bbU32 dtBufferStream::DebugCheck()
