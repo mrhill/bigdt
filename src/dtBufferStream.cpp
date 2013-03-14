@@ -890,6 +890,7 @@ dtSection* dtBufferStream::MapSeq(bbU64 const offset, bbUINT minsize, dtMAP cons
 
     bbU64 segmentstart;
     bbU32 idx;
+    bbU32 segmentOffset;
     dtSegment* pSegment;
 
     dtSection* const pSection = SectionAlloc();
@@ -965,7 +966,7 @@ dtSection* dtBufferStream::MapSeq(bbU64 const offset, bbUINT minsize, dtMAP cons
     //
     // Check if segment size satisfies minsize requirement
     //
-    bbU32 segmentOffset = (bbU32)offset - (bbU32)segmentstart;
+    segmentOffset = (bbU32)offset - (bbU32)segmentstart;
     bbASSERT(pSegment->mSize > segmentOffset);
 
     if ((pSegment->mSize-segmentOffset) < minsize)
