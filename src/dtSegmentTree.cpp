@@ -389,7 +389,7 @@ bbU32 dtSegmentTree::SplitMapSegment(bbU32 const idx, bbU32 const segmentoffset)
     bbASSERT(mSegments[idx].mType == dtSEGMENTTYPE_MAP);
     bbASSERT(segmentoffset <= mSegments[idx].mSize);
 
-    dtSegment* const pSegmentLeft  = mSegments.GetPtr(idx);
+    dtSegment* pSegmentLeft = mSegments.GetPtr(idx);
 
     if (pSegmentLeft->mSize == segmentoffset)
     {
@@ -401,7 +401,8 @@ bbU32 dtSegmentTree::SplitMapSegment(bbU32 const idx, bbU32 const segmentoffset)
     if ((right = NewSegment()) == (bbU32)-1)
         return (bbU32)-1;
 
-    dtSegment* const pSegmentRight = mSegments.GetPtr(right);
+    pSegmentLeft = mSegments.GetPtr(idx);
+    dtSegment* pSegmentRight = mSegments.GetPtr(right);
 
     bbU32 rightsize = pSegmentLeft->mSize - segmentoffset;
     if ((pSegmentRight->mpData = (bbU8*) bbMemAlloc(rightsize)) == NULL)
