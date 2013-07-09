@@ -49,7 +49,7 @@ bbUINT dtHistory::Peek(bbU32 const pos, dtBufferChange* const pChange) const
 
     bbUINT len;
     const bbU8* pTmp;
-    
+
     if (pos == dtHistory::PEEKNEXT)
     {
         pTmp = mHist.GetPtr(mHistPos);
@@ -73,7 +73,7 @@ bbUINT dtHistory::Peek(bbU32 const pos, dtBufferChange* const pChange) const
     case 1: pChange->offset = bbLD16(pTmp); pTmp+=2; break;
     case 2: pChange->offset = (bbU64)bbLD32(pTmp) | ((bbU64)bbLD32(pTmp+4)<<32); pTmp+=8; break;
     }
-    
+
     switch ((header >> 6) & 3)
     {
     case 0:
@@ -89,7 +89,7 @@ bbUINT dtHistory::Peek(bbU32 const pos, dtBufferChange* const pChange) const
     }
 
     #if bbSIZEOF_UPTR > 4
-    pChange->user = (void*)((bbUPTR)bbLD32(pTmp) | ((bbUPTR)bbLD32(pTmp)<<32));
+    pChange->user = (void*)((bbUPTR)bbLD32(pTmp) | ((bbUPTR)bbLD32(pTmp+4)<<32));
     pTmp+=8+1;
     #else
     pChange->user = (void*)bbLD32(pTmp);
