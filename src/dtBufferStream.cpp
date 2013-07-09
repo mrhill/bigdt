@@ -38,6 +38,9 @@ dtBufferStream::dtBufferStream()
     bbASSERT(sizeof(dtSegment) == mSegments.GetElementSize());
 
     mSegmentLastMapped = (bbU32)-1;
+    mSegmentLastOffset =
+    mMappedSize =
+    mFileSize = 0;
     bbMemClear(mPagePool, sizeof(mPagePool));
 
     mhFile = mhTempFile = NULL;
@@ -72,7 +75,7 @@ bbERR dtBufferStream::OnOpen(const bbCHAR* const pPath, int isnew)
 
     if (isnew)
     {
-        mBufSize = 0;
+        mBufSize = mFileSize = 0;
         bbASSERT(mhFile == NULL);
     }
     else
@@ -89,7 +92,7 @@ bbERR dtBufferStream::OnOpen(const bbCHAR* const pPath, int isnew)
         if ((mhFile = bbFileOpen(pPath, bbFILEOPEN_READ)) == NULL)
             goto dtBuffer_file_Open_err;
 
-        mBufSize = bbFileExt(mhFile);
+        mBufSize = mFileSize = bbFileExt(mhFile);
         if (mBufSize == (bbU64)-1)
             goto dtBuffer_file_Open_err;
     }
@@ -108,6 +111,8 @@ bbERR dtBufferStream::OnOpen(const bbCHAR* const pPath, int isnew)
     pSeg->mGE         = (bbU32)-1;
 
     mSegmentLastMapped = (bbU32)-1;
+
+    mMappedSize = 0;
 
     //
     // Init page index
@@ -474,6 +479,8 @@ bbERR dtBufferStream::Delete(bbU64 const offset, bbU64 size, void* const user)
                 bbFileRead(mhFile, pUndo, (bbU32)segmentsize);//xxx
                 pUndo += (bbU32)segmentsize;
             }
+
+            mMappedSize += (bbU32)segmentsize;
         }
 
         // unlink node from tree
@@ -515,6 +522,7 @@ bbERR dtBufferStream::Delete(bbU64 const offset, bbU64 size, void* const user)
             pSegment->mFileOffset += size;
             pSegment->mFileSize -= size;
             NodeSubstractOffset(idx, offset, size);
+            mMappedSize += size;
         }
         // else
         //
@@ -618,6 +626,7 @@ bbERR dtBufferStream::Delete(bbU64 const offset, bbU64 size, void* const user)
     #ifdef bbDEBUG
     gCheckTreeDisable = 0;
     CheckTree();
+    DebugCheckMappedSize();
     #endif
 
     NotifyChange(dtCHANGE_DELETE, offset, size_org, user);
@@ -884,7 +893,6 @@ dtSection* dtBufferStream::MapSeq(bbU64 const offset, bbUINT minsize, dtMAP cons
             bbErrSet(bbEEOF);
             return NULL;
         }
-
         minsize = (bbUINT)mBufSize - (bbUINT)offset;
     }
 
@@ -957,6 +965,11 @@ dtSection* dtBufferStream::MapSeq(bbU64 const offset, bbUINT minsize, dtMAP cons
         pSegment->mSize    = (bbU32)pSegment->mFileSize;
         pSegment->mpData   = pData;
         pSegment->mChanged = 0;
+
+        mMappedSize += (bbU32)pSegment->mFileSize;
+        #ifdef bbDEBUG
+        DebugCheckMappedSize();
+        #endif
     }
 
     mSegmentLastMapped = idx; // cache
@@ -1187,10 +1200,6 @@ bbERR dtBufferStream::Commit(dtSection* const pSection, void* const user)
     default:
         bbASSERT(0);
     }
-
-
-
-//OnSave(bbT("c:/xx"), dtBUFFERSAVETYPE_NEW);
 
     err = bbEOK;
     dtBufferStream_Commit_err:
@@ -1428,6 +1437,21 @@ void dtBufferStream::CheckTree()
     }
 }
 
+void dtBufferStream::DebugCheckMappedSize()
+{
+    // Check if mMappedSize matches segment index
+    bbU32 walk = mSegmentUsedFirst;
+    bbU64 unmappedSize = 0;
+    do
+    {
+        if (mSegments[walk].mType == dtSEGMENTTYPE_NULL)
+            unmappedSize += mSegments[walk].mFileSize;
+        walk = mSegments[walk].mNext;
+    } while (walk != mSegmentUsedFirst);
+
+    bbASSERT((mFileSize - unmappedSize) == mMappedSize);
+}
+
 bbU32 dtBufferStream::DebugCheck()
 {
     bbASSERT(mSegmentUsedFirst < mSegments.GetSize());
@@ -1490,6 +1514,8 @@ bbU32 dtBufferStream::DebugCheck()
 
     bbASSERT((freecount + usedcount) == mSegments.GetSize()); // orphans?
     bbASSERT(bufsize == mBufSize);
+
+    DebugCheckMappedSize();
 
     return crc;
 }

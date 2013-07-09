@@ -57,7 +57,6 @@
 */
 
 #include "dtBuffer.h"
-#include "dtStream.h"
 #include "dtSegmentTree.h"
 #include "babel/file.h"
 
@@ -87,6 +86,9 @@ private:
     bbU32           mSegmentLastMapped; //!< Index of last and still mapped segment, or -1 if none
     bbU64           mSegmentLastOffset; //!< Startoffset of mSegmentLastMapped segment
 
+    bbU64           mMappedSize;        //!< Number of bytes mapped to memory
+    bbU64           mFileSize;          //!< Number of bytes in underlying file
+
     bbFILEH         mhFile;             //!< Handle to underlying file
     bbFILEH         mhTempFile;         //!< Handle to temp file
 
@@ -104,6 +106,7 @@ public:
     void CheckTree();
     bbU32 DebugCheck();                 //!< Test integrity, returns buffer CRC
     void DumpSegments(bbFILEH hFile = NULL);
+    void DebugCheckMappedSize();
 #endif
 
 private:
@@ -137,7 +140,7 @@ public:
     virtual ~dtBufferStream();
 
     /** Create and open a buffer.
-        @param pPath Pointer to 0-terminated path of file to open, 
+        @param pPath Pointer to 0-terminated path of file to open,
                      NULL to create a new buffer, or
                      -1 to create an unopened buffer
         @return Pointer to opened buffer object, or NULL on failure.

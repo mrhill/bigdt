@@ -94,7 +94,7 @@ struct dtSection
     bbU32   mSegment;
     dtPage* mpPage;
     };
-    bbU64   mOffset;        //!< Buffer offset of mapped section    
+    bbU64   mOffset;        //!< Buffer offset of mapped section
 };
 
 /** Maximum number of concurrently mapable dtBuffer sections. */
@@ -125,12 +125,9 @@ protected:
     bbU8                mUndoPointRec;  //!< Multi-part undo/redo reached undopoint, valid only if mUndoActive!=0
     bbU32               mSyncPtNoMod;   //!< Last sync point when buffer was not modified
     bbU32               mSyncPt;        //!< Circular ID of last change
-    bbCHAR*             mpName;         /**< Buffer name (filename, URL, etc), 0-terminated, managed heap block,
-                                             will be NULL if buffer is closed.
-                                        */
+    bbCHAR*             mpName;         //!< Name (filename, URL, etc), 0-terminated, managed heap block, NULL if closed
 public:
     bbU32               mRefCt;         //!< Application defined reference count
-
 protected:
     bbU32               mHistPos;       //!< Next read position in change history
     dtHistory           mHistory;       //!< Change history
@@ -180,7 +177,7 @@ protected:
     }
 
     /** Attach heap block with new buffer name to dtBuffer::mpName.
-        The old heap block will be freed. 
+        The old heap block will be freed.
         @param pName Heap block with 0-terminated string, object control is taken over.
     */
     void AttachName(bbCHAR* const pName);
@@ -417,7 +414,7 @@ public:
     virtual dtSection* MapSeq(bbU64 const offset, bbUINT minsize, dtMAP const accesshint) = 0;
 
     /** Commit a section mapped by dtBuffer::Map or dtBuffer::MapSeq committing changes.
-        
+
         The buffer will be marked dirty in the range of the section. If the
         buffer implementation has caching functionality, the section will be
         written through to the base level buffer space.
