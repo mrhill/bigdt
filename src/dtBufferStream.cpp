@@ -2,7 +2,7 @@
 #include <babel/str.h>
 #include <babel/file.h>
 #include <babel/log.h>
-#include <babel/StrBuf.h>
+#include <babel/strbuf.h>
 
 enum
 {
