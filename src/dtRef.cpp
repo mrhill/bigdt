@@ -2,16 +2,63 @@
 
 #define dtBUFREF_MINSCANSIZE 4096
 
-dtRefStore::dtRefStore() : bbTree(sizeof(dtRefPt), (bbUINT)(bbUPTR)&((dtRefPt*)(bbUPTR)0)->mLevel)
+dtRefStore::dtRefStore()
 {
+    mpNodes = NULL;
+    mTreeSize = 0;
+    mNodeRoot = (bbU32)-1;
+    mNodeFree = 0;
+
     SetMaxScanSize(1024*512);
     bbMemClear(&mHint, sizeof(dtRefPt));
 }
 
+dtRefStore::~dtRefStore()
+{
+    bbMemFree(mpNodes);
+}
+
 void dtRefStore::Clear()
 {
-    bbTree::Clear();
+    bbMemFreeNull((void**)&mpNodes);
+    mTreeSize = 0;
+    mNodeRoot = (bbU32)-1;
+    mNodeFree = 0;
+
     bbMemClear(&mHint, sizeof(dtRefPt));
+}
+
+bbU32 dtRefStore::NewNode()
+{
+    bbU32 i;
+
+    if (mNodeFree >= mTreeSize)
+    {
+        bbASSERT(mNodeFree == mTreeSize);
+
+        const bbUINT newsize = mTreeSize + 32;
+        if (bbEOK != bbMemRealloc(newsize * sizeof(dtRefNode), (void**)&mpNodes))
+            return (bbU32)-1;
+        mTreeSize = newsize;
+
+        i = mNodeFree;
+        bbU32 const i_end = mTreeSize;
+        dtRefNode* pNode = GetNode(i);
+        do
+        {
+            pNode->mLT = ++i;
+            pNode++;
+
+        } while (i < i_end);
+    }
+
+    i = mNodeFree;
+    mNodeFree = GetNode(i)->mLT;
+    return i;
+}
+
+void dtRefStore::BufferChange(const dtBufferChange* pChange)
+{
 }
 
 bbERR dtRefStore::SaveRef(const dtRefPt* const pRef)

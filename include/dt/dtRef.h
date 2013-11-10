@@ -2,7 +2,6 @@
 #define dtRef_H_
 
 #include "dtdefs.h"
-#include "babel/Tree.h"
 
 /** Buffer reference point.
 
@@ -42,8 +41,10 @@ enum dtREFOPT
     dtREFOPT_AREAMASK     = 0x3,  //!< Bitmask to mask editing area
 };
 
-struct dtRefNode : bbTreeNode
+struct dtRefNode
 {
+    bbU32   mLT; //!< index of node with offset less than this node, (bbU32)-1 is none
+    bbU32   mGE; //!< index of node with offset greater or equal than this node, (bbU32)-1 is none
     dtRefPt ref; //!< Reference point
 };
 
@@ -119,15 +120,26 @@ struct dtRefIf
     - dtREFOPT_EOB is set
     - If dtREFOPT_ESTIMATED is set, mLine is estimated
 */
-class dtRefStore : private bbTree
+class dtRefStore
 {
-    dtRefIf*    mpIf;           //!< Associated interface
+    dtRefNode*  mpNodes;        //!< Tree nodes, linear array
+    bbU32       mTreeSize;      //!< Capacity of mpNodes[]
+    bbU32       mNodeRoot;      //!< Index of tree root, -1 if empty
+    bbU32       mNodeFree;      //!< Index of first free entry, 0 if empty
     bbU32       mMaxScanSize;   //!< Maximum bytes to scan, before reference points are estimated. Must be power of 2.
+    dtRefIf*    mpIf;           //!< Associated interface
     dtRefPt     mHint;
+
+    /** Allocate a new node.
+        The allocated node struct will be unitialized.
+        This function invalidates any node pointers, because it may reallocate the mpNodes[] array.
+        @return Index into mpNodes[], or (bbU32)-1 on error
+    */
+    bbU32 NewNode();
 
     inline dtRefNode* GetNode(bbU32 const idx) const
     {
-        return (dtRefNode*)((bbU8*)mpNodes + idx * sizeof(dtRefNode));
+        return mpNodes + idx;
     }
 
     inline bbU32 GetOptimumTreeSize() const
@@ -139,6 +151,7 @@ class dtRefStore : private bbTree
 
 public:
     dtRefStore();
+    ~dtRefStore();
 
     void FindNodeFromOffset(bbU64 const offset, dtRefPt* const pRef);
     void FindNodeFromLine(bbU64 const line, dtRefPt* const pRef);
@@ -199,6 +212,11 @@ public:
         @param pRef   Returns reference point
     */
     bbERR Line2Ref(bbU64 const line, dtRefPt* const pRef);
+
+    /** Update reference points for buffer change.
+        @param pChange Buffer change descriptor
+    */
+    void BufferChange(const dtBufferChange* pChange);
 };
 
 #endif
