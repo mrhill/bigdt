@@ -10,7 +10,6 @@ dtRefStore::dtRefStore()
     mNodeFree = 0;
 
     SetMaxScanSize(1024*512);
-    bbMemClear(&mHint, sizeof(dtRefPt));
 }
 
 dtRefStore::~dtRefStore()
@@ -24,8 +23,6 @@ void dtRefStore::Clear()
     mTreeSize = 0;
     mNodeRoot = (bbU32)-1;
     mNodeFree = 0;
-
-    bbMemClear(&mHint, sizeof(dtRefPt));
 }
 
 bbU32 dtRefStore::NewNode()
@@ -57,8 +54,9 @@ bbU32 dtRefStore::NewNode()
     return i;
 }
 
-void dtRefStore::BufferChange(const dtBufferChange* pChange)
+void dtRefStore::BufferChange(const dtBufferChange* /*pChange*/)
 {
+    Clear();//xxx
 }
 
 bbERR dtRefStore::SaveRef(const dtRefPt* const pRef)
@@ -66,10 +64,7 @@ bbERR dtRefStore::SaveRef(const dtRefPt* const pRef)
     bbU32 idx;
 
     if (pRef->mOpt & dtREFOPT_ESTIMATED)
-    {
-        mHint = *pRef;
         return bbEOK;
-    }
 
     if (pRef->mColumn)
         return bbErrSet(bbEBADPARAM);

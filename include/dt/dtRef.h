@@ -128,7 +128,6 @@ class dtRefStore
     bbU32       mNodeFree;      //!< Index of first free entry, 0 if empty
     bbU32       mMaxScanSize;   //!< Maximum bytes to scan, before reference points are estimated. Must be power of 2.
     dtRefIf*    mpIf;           //!< Associated interface
-    dtRefPt     mHint;
 
     /** Allocate a new node.
         The allocated node struct will be unitialized.
