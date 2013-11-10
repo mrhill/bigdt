@@ -315,9 +315,8 @@ protected:
     virtual bbCHAR* PathNorm(const bbCHAR* const pPath);
 
     /** Open existing or new buffer.
-        If the buffer is existing, mpName should be used to open the underlying file.
         @param pPath Path or name of file to open
-        @param isnew !=0 if opening a new file
+        @param isnew !=0 if creating a new file, \a pPath can be ignored
     */
     virtual bbERR OnOpen(const bbCHAR* const pPath, int isnew) = 0;
 
@@ -329,7 +328,7 @@ protected:
         @param pPath Path to save location.
         @param savetype Hint for save operation
     */
-    virtual bbERR OnSave(const bbCHAR* pPath, dtBUFFERSAVETYPE const savetype) = 0;
+    virtual bbERR OnSave(const bbCHAR* pPath, dtBUFFERSAVETYPE savetype) = 0;
 
 public:
     virtual ~dtBuffer();

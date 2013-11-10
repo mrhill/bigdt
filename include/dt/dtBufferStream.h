@@ -149,7 +149,7 @@ public:
 
     virtual bbERR OnOpen(const bbCHAR* const pPath, int isnew);
     virtual void  OnClose();
-    virtual bbERR OnSave(const bbCHAR* pPath, dtBUFFERSAVETYPE const savetype);
+    virtual bbERR OnSave(const bbCHAR* pPath, dtBUFFERSAVETYPE savetype);
     virtual bbERR Delete( bbU64 const offset, bbU64 size, void* const user);
     virtual dtSection* Insert(bbU64 const offset, bbU32 const size);
     virtual dtSection* Map(bbU64 offset, bbU32 size, dtMAP const accesshint);

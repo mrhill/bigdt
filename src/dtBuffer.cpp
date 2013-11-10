@@ -81,7 +81,7 @@ void dtBuffer::NotifyChange(dtCHANGE const type, bbU64 offset, bbU64 length, voi
     change.user      = user;
     change.offset    = offset;
     change.length    = length;
-    
+
     bbUINT i = mNotifyHandlers.GetSize();
     while (i) mNotifyHandlers[--i]->OnBufferChange(this, &change);
 }
@@ -366,16 +366,17 @@ bbERR dtBuffer::Save(const bbCHAR* const pPath)
     else
     {
         savetype = dtBUFFERSAVETYPE_INPLACE;
+
         bbASSERT(!(mOpt & dtBUFFEROPT_NEW));
+        if (mOpt & dtBUFFEROPT_NEW)
+            return bbErrSet(bbEBADPARAM);
     }
 
     if (OnSave((savetype == dtBUFFERSAVETYPE_INPLACE) ? mpName : pPathNew, savetype) != bbEOK)
         goto dtBuffer_Save_err;
 
     if (savetype != dtBUFFERSAVETYPE_INPLACE)
-    {
         AttachName((bbCHAR*)pPathNew);
-    }
 
     mSyncPtNoMod = mSyncPt;
     mOpt = (bbU8)((bbUINT)mOpt &~ (dtBUFFEROPT_NEW|dtBUFFEROPT_MODIFIED));

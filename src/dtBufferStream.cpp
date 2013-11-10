@@ -136,9 +136,7 @@ bbERR dtBufferStream::OnOpen(const bbCHAR* const pPath, int isnew)
 void dtBufferStream::OnClose()
 {
     for (bbUINT idx = 0; idx<dtBUFFERSTREAM_MAXPAGES; idx++)
-    {
         bbMemFreeNull((void**)&mPagePool[idx].mpData);
-    }
 
     ClearSegments();
 
@@ -146,7 +144,7 @@ void dtBufferStream::OnClose()
     mhFile = NULL;
 }
 
-bbERR dtBufferStream::OnSave(const bbCHAR* pPath, dtBUFFERSAVETYPE const savetype)
+bbERR dtBufferStream::OnSave(const bbCHAR* pPath, dtBUFFERSAVETYPE savetype)
 {
     bbFILEH hFile = NULL;
     bbCHAR* pTmpName = NULL;
@@ -231,8 +229,8 @@ bbERR dtBufferStream::OnSave(const bbCHAR* pPath, dtBUFFERSAVETYPE const savetyp
 
     bbFileClose(hFile);
     hFile = NULL;
-    bbFileClose(mhFile);
-    mhFile = NULL;
+
+    OnClose();
 
     if (savetype == dtBUFFERSAVETYPE_INPLACE)
     {
@@ -248,7 +246,7 @@ bbERR dtBufferStream::OnSave(const bbCHAR* pPath, dtBUFFERSAVETYPE const savetyp
         bbMemFree(pTmpName);
     }
 
-    if ((mhFile = bbFileOpen(pPath, bbFILEOPEN_READ)) == NULL)
+    if (bbEOK != OnOpen(pPath, 0))
         goto err;
 
     return bbEOK;
