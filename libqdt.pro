@@ -2,7 +2,7 @@ TEMPLATE = lib
 CONFIG += staticlib
 TARGET = qdt
 DEPENDPATH += .
-INCLUDEPATH += ./include/dt ../../babel/include
+INCLUDEPATH += ./include/dt ../babel/include
 DEFINES += bbQT
 
 win32:QMAKE_CXXFLAGS += /Zc:wchar_t /Zp4
