@@ -14,7 +14,7 @@ struct Param
 {
     bbCHAR* pFile;          //!< Datafile to open for test, managed heap block
     bbCHAR* pLogFile;       //!< Buffer log to replay, or NULL, managed heap block
-    char*   pBufferClass;   //!< Buffer classname to test, or NULL for dtBufferStream
+    const char* pBufferClass; //!< Buffer classname to test, or NULL for dtBufferStream
 
     Param()
     {
@@ -51,7 +51,7 @@ bbERR test1(Param* pParams, dtBuffer& buffer)
 
     printf("Is Open: %d, is modified: %d\n", buffer.IsOpen(), buffer.IsModified());
 
-    if (!(pSection = buffer.MapSeq(0)))
+    if (!(pSection = buffer.MapSeq(0, 0, dtMAP_WRITE)))
         goto test1_err;
     buffer.Commit(pSection, 0);
 
@@ -101,7 +101,7 @@ bbERR test2(Param* pParams, dtBuffer& buffer)
     {
         bbU64 offset = (rand()^(rand()<<16)) % buffer.GetSize();
 
-        if (!(pSection = buffer.MapSeq(offset)))
+        if (!(pSection = buffer.MapSeq(offset, 0, dtMAP_WRITE)))
             goto test2_err;
 
         buffer.Discard(pSection);
@@ -149,7 +149,7 @@ bbERR test3(Param* pParams, dtBuffer& buffer)
             printf("Forward...\n");
             for (i=0; i<size; ++i)
             {
-                if (!(pSection = buffer.MapSeq(i)))
+                if (!(pSection = buffer.Map(i, 1, dtMAP_WRITE)))
                     goto test3_err;
                 buffer.Discard(pSection);
             }
@@ -159,7 +159,7 @@ bbERR test3(Param* pParams, dtBuffer& buffer)
             printf("Backward...\n");
             for (i=size-1; (bbS32)i>=0; --i)
             {
-                if (!(pSection = buffer.MapSeq(i)))
+                if (!(pSection = buffer.Map(i, 1, dtMAP_WRITE)))
                     goto test3_err;
                 buffer.Discard(pSection);
             }
@@ -255,8 +255,6 @@ int main(int argc, char** argv)
 
     if (!strcmp(params.pBufferClass, "dtBufferStream"))
         pBuffer = new dtBufferStream;
-    else if (!strcmp(params.pBufferClass, "dtBufferMem"))
-        pBuffer = new dtBufferMem;
 
     printf("Testing buffer class '%s'\n", params.pBufferClass);
 
